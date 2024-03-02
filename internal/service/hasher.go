@@ -17,11 +17,6 @@ const (
 	hashLength   = 10
 )
 
-var (
-	ErrTooManyCollisions = errors.New("too many collisions in a row")
-	ErrValueNotFound     = errors.New("original value not found")
-)
-
 type HasherService struct {
 	logger          zerolog.Logger
 	HashKey         string
@@ -37,14 +32,14 @@ func NewHasherService(config *Config, logger zerolog.Logger, shortUrlStorage sto
 }
 
 func (hs *HasherService) Shorten(someString string) (string, error) {
-	parsedUrl, err := url.Parse(someString)
+	parsedUrl, err := url.ParseRequestURI(someString)
 	if err != nil {
-		return "", fmt.Errorf("parse url: %w", err)
+		return "", &Error{ReasonInvalidReq, fmt.Errorf("parse url: %w", err)}
 	}
 	urlString := parsedUrl.String()
 	long, ok, err := hs.shortUrlStorage.FindByValue(urlString)
 	if err != nil {
-		return "", fmt.Errorf("storage find by value: %w", err)
+		return "", &Error{ReasonStorage, fmt.Errorf("find by value: %w", err)}
 	}
 	if ok {
 		return long, nil
@@ -54,7 +49,7 @@ func (hs *HasherService) Shorten(someString string) (string, error) {
 		// check collision
 		_, ok, err := hs.shortUrlStorage.FindByKey(short)
 		if err != nil {
-			return "", fmt.Errorf("storage find by key: %w", err)
+			return "", &Error{ReasonStorage, fmt.Errorf("find by key: %w", err)}
 		}
 		if ok {
 			// generate new key and retry
@@ -64,20 +59,20 @@ func (hs *HasherService) Shorten(someString string) (string, error) {
 		}
 		err = hs.shortUrlStorage.Save(short, urlString)
 		if err != nil {
-			return "", fmt.Errorf("storage save: %w", err)
+			return "", &Error{ReasonStorage, fmt.Errorf("save: %w", err)}
 		}
 		return short, nil
 	}
-	return "", ErrTooManyCollisions
+	return "", &Error{ReasonService, errors.New("too many collisions")}
 }
 
 func (hs *HasherService) Reverse(shortLink string) (string, error) {
 	long, ok, err := hs.shortUrlStorage.FindByKey(shortLink)
 	if err != nil {
-		return "", fmt.Errorf("storage find by key: %w", err)
+		return "", &Error{ReasonStorage, fmt.Errorf("find by key: %w", err)}
 	}
 	if !ok {
-		return "", ErrValueNotFound
+		return "", &Error{ReasonNotFound, errors.New("original value not found")}
 	}
 	return long, nil
 }

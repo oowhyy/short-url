@@ -1,7 +1,6 @@
-app:
-  listen_addr: "3000"
-  service:
-    base_key: "58e88fb0-eff2-4bd3-8901-b310910511c5"
-
+server:
+  listen_addr: ":3000"
+service:
+  base_key: "58e88fb0-eff2-4bd3-8901-b310910511c5"
 
 log_level: "debug"

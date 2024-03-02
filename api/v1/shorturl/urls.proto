@@ -1,0 +1,53 @@
+syntax = "proto3";
+
+package shorturl;
+
+// import "google/api/annotations.proto";
+
+option go_package = "pkg/shorturlpb";
+
+// service Articles {
+//     rpc GetArticle(GetArticleRequest) returns (GetArticleResponse) {
+//         option (google.api.http) = {
+//             get: "/v1/article/{uuid.value}"
+//         };
+//     }
+//     rpc PostArticle(PostArticleRequest) returns(PostArticleResponse) {
+//         option (google.api.http) = {
+//             post: "/v1/article"
+//             body: "*"
+//         };
+//     }
+//     rpc PutArticle(PutArticleRequest) returns (PutArticleResponse) {
+//         option (google.api.http) = {
+//             put: "/v1/article/{uuid.value}"
+//             body: "*"
+//         };
+//     }
+//     rpc DeleteArticle(DeleteArticleRequest) returns (DeleteArticleResponse) {
+//         option (google.api.http) = {
+//             delete: "/v1/article/{uuid.value}"
+//         };
+//     }
+// }
+
+service ShortUrl {
+    rpc Shorten(PostUrlRequest) returns (PostUrlResponse) {};
+    rpc Reverse(GetUrlRequest) returns (GetUrlResponse) {};
+}
+
+message PostUrlRequest {
+    string ogUrl = 1;
+}
+
+message PostUrlResponse {
+    string shortLink = 1;
+}
+
+message GetUrlRequest {
+    string shortLink = 1;
+}
+
+message GetUrlResponse {
+    string ogUrl = 1;
+}
