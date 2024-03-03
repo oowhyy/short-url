@@ -72,7 +72,7 @@ func (hs *HasherService) Reverse(shortLink string) (string, error) {
 		return "", &Error{ReasonStorage, fmt.Errorf("find by key: %w", err)}
 	}
 	if !ok {
-		return "", &Error{ReasonNotFound, errors.New("original value not found")}
+		return "", &Error{ReasonNotFound, fmt.Errorf("%q not found", shortLink)}
 	}
 	return long, nil
 }
