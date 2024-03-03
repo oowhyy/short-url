@@ -1,9 +1,11 @@
 package main
 
 import (
+	"context"
 	"flag"
 	"fmt"
 	"os"
+	"os/signal"
 
 	"github.com/oowhyy/short-url/internal/config"
 	"github.com/oowhyy/short-url/internal/server"
@@ -25,7 +27,9 @@ func main() {
 	service := service.NewHasherService(cfg.Service, baseLogger.With().Str("component", "service").Logger(), store)
 
 	server := server.NewServer(cfg.Server, baseLogger.With().Str("component", "server").Logger(), service)
-	err = server.Run()
+	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt)
+	defer stop()
+	err = server.Run(ctx)
 	if err != nil {
 		panic(err)
 	}

@@ -1,6 +1,10 @@
 server:
-  listen_addr: ":3000"
+  listen_http: true
+  listen_addr_http: ":3000"
+  listen_grpc: true
+  listen_addr_grpc: ":50051"
+
 service:
   base_key: "58e88fb0-eff2-4bd3-8901-b310910511c5"
 
-log_level: "debug"
+log_level: "info"

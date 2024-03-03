@@ -1,5 +1,8 @@
 package server
 
 type Config struct {
-	ListenAddr string `yaml:"listen_addr"`
+	ListenAddrGrpc string `yaml:"listen_addr_grpc"`
+	ListenAddrHttp string `yaml:"listen_addr_http"`
+	ListenGrpc bool `yaml:"listen_grpc"`
+	ListenHttp bool `yaml:"listen_http"`
 }

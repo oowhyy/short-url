@@ -2,21 +2,22 @@ package server
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"net"
+	"net/http"
+	"time"
 
+	"github.com/labstack/echo/v4"
 	"github.com/oowhyy/short-url/internal/service"
 	"github.com/oowhyy/short-url/pkg/shorturlpb"
 	"github.com/rs/zerolog"
+	"golang.org/x/sync/errgroup"
 	"google.golang.org/grpc"
-	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/reflection"
-	"google.golang.org/grpc/status"
 )
 
 type Server struct {
-	listenAddr      string
+	config          *Config
 	logger          zerolog.Logger
 	shortUrlService service.ShortUrlService
 
@@ -25,65 +26,75 @@ type Server struct {
 
 func NewServer(config *Config, logger zerolog.Logger, shortUrlService service.ShortUrlService) *Server {
 	return &Server{
-		listenAddr:      config.ListenAddr,
+		config:          config,
 		logger:          logger,
 		shortUrlService: shortUrlService,
 	}
 }
 
-func (s *Server) Run() error {
-	lis, err := net.Listen("tcp", s.listenAddr)
+func (s *Server) Run(ctx context.Context) error {
+	wg, ctx := errgroup.WithContext(ctx)
+	if s.config.ListenGrpc {
+		wg.Go(func() error {
+			err := s.RunGrpc(ctx)
+			if err != nil {
+				fmt.Println("grpc close err", err)
+				return err
+			}
+			return nil
+		})
+	}
+	if s.config.ListenHttp {
+		wg.Go(func() error {
+			err := s.RunHttp(ctx)
+			if err != nil {
+				fmt.Println("http close err", err)
+				return err
+			}
+			return nil
+		})
+	}
+	if err := wg.Wait(); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (s *Server) RunGrpc(ctx context.Context) error {
+	lis, err := net.Listen("tcp", s.config.ListenAddrGrpc)
 	if err != nil {
 		return fmt.Errorf("failed to listen tcp port: %w", err)
 	}
 	server := grpc.NewServer()
 	shorturlpb.RegisterShortUrlServer(server, s)
 	reflection.Register(server)
-	s.logger.Info().Str("listenAddr", s.listenAddr).Msg("running grpc server")
+	s.logger.Info().Str("listenAddr", s.config.ListenAddrGrpc).Msg("running grpc server")
+	go func() {
+		<-ctx.Done()
+		server.Stop()
+	}()
 	return server.Serve(lis)
 }
 
-func (s *Server) Shorten(ctx context.Context, req *shorturlpb.PostUrlRequest) (*shorturlpb.PostUrlResponse, error) {
-	someString := req.GetOgUrl()
-	res, err := s.shortUrlService.Shorten(someString)
-	if err != nil {
-		var serviceErr *service.Error
-		ok := errors.As(err, &serviceErr)
-		if !ok {
-			return &shorturlpb.PostUrlResponse{}, status.Errorf(codes.Internal, "unknown error: %s", err)
-		}
-		if serviceErr.Reason == service.ReasonInvalidReq {
-			return &shorturlpb.PostUrlResponse{}, status.Errorf(codes.InvalidArgument, "%s error: %s", serviceErr.Reason, serviceErr.Err)
-		}
-		return &shorturlpb.PostUrlResponse{}, status.Errorf(codes.Internal, "%s error: %s", serviceErr.Reason, serviceErr.Err)
+func (s *Server) RunHttp(ctx context.Context) error {
+	e := echo.New()
+	// api
+	apiGroup := e.Group("/api/v1")
+	apiGroup.GET("/health-check", s.handleHealthCheck)
+	apiGroup.POST("/service", s.handleShorten)
+	apiGroup.GET("/service/:short", s.handleReverse)
+	// redirect
+	e.GET("/:short", s.handleRedirect)
+
+	go func() {
+		<-ctx.Done()
+		ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
+		defer cancel()
+		e.Shutdown(ctx)
+	}()
+	err := e.Start(s.config.ListenAddrHttp)
+	if err != nil && err != http.ErrServerClosed {
+		return err
 	}
-	return &shorturlpb.PostUrlResponse{ShortLink: res}, nil
+	return nil
 }
-
-func (s *Server) Reverse(ctx context.Context, req *shorturlpb.GetUrlRequest) (*shorturlpb.GetUrlResponse, error) {
-	short := req.GetShortLink()
-	res, err := s.shortUrlService.Reverse(short)
-	if err != nil {
-		var serviceErr *service.Error
-		ok := errors.As(err, &serviceErr)
-		if !ok {
-			return &shorturlpb.GetUrlResponse{}, status.Errorf(codes.Internal, "unknown error: %s", err)
-		}
-		if serviceErr.Reason == service.ReasonNotFound {
-			return &shorturlpb.GetUrlResponse{}, status.Errorf(codes.NotFound, "%s error: %s", serviceErr.Reason, serviceErr.Err)
-		}
-		return &shorturlpb.GetUrlResponse{}, status.Errorf(codes.Internal, "%s error: %s", serviceErr.Reason, serviceErr.Err)
-	}
-	return &shorturlpb.GetUrlResponse{OgUrl: res}, nil
-}
-
-// func (s *Server) Run() error {
-// 	e := echo.New()
-// 	apiGroup := e.Group("/api/v1")
-// 	apiGroup.GET("/health-check", s.handleHealthCheck)
-// 	return e.Start(s.listenAddr)
-// }
-
-// func (s *Server) handleHealthCheck(ctx echo.Context) error {
-// 	return ctx.String(http.StatusOK, "OK")
-// }
