@@ -12,6 +12,7 @@ type Config struct {
 	Server      *server.Config  `yaml:"server"`
 	StorageType string          `yaml:"storage_type"`
 	Service     *service.Config `yaml:"service"`
+	LogLevel string `yaml:"log_level"`
 }
 
 func MustLoadPath(path string) *Config {

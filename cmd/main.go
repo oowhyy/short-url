@@ -16,12 +16,16 @@ func main() {
 	cfgPath := flag.String("config", "config.yaml", "path to config")
 	flag.Parse()
 	cfg := config.MustLoadPath(*cfgPath)
-	baseLogger := zerolog.New(os.Stdout).With().Timestamp().Logger().Level(zerolog.DebugLevel)
+	logLevel, err := zerolog.ParseLevel(cfg.LogLevel)
+	if err != nil {
+		panic(err)
+	}
+	baseLogger := zerolog.New(os.Stdout).With().Timestamp().Logger().Level(logLevel)
 	store := memory.NewMemoryStorage()
 	service := service.NewHasherService(cfg.Service, baseLogger.With().Str("component", "service").Logger(), store)
 
 	server := server.NewServer(cfg.Server, baseLogger.With().Str("component", "server").Logger(), service)
-	err :=server.Run()
+	err = server.Run()
 	if err != nil {
 		panic(err)
 	}
