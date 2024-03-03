@@ -1,5 +1,7 @@
-say:
-	@echo hello
+testcoverage:
+	@go test -coverprofile=c.out ./...
+	@go tool cover -func=c.out
+	@go tool cover -html=c.out
 
 .PHONY: proto
 proto:
