@@ -7,4 +7,6 @@ server:
 service:
   base_key: "58e88fb0-eff2-4bd3-8901-b310910511c5"
 
+storage_type: "memory"
+
 log_level: "info"
