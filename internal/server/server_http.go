@@ -31,7 +31,7 @@ func (s *Server) handleShorten(ctx echo.Context) error {
 			Error:     "bad request params",
 		})
 	}
-	res, err := s.shortUrlService.Shorten(reqBody.OgUrl)
+	res, err := s.shortUrlService.Shorten(ctx.Request().Context(),reqBody.OgUrl)
 	if err != nil {
 		var serviceErr *service.Error
 		ok := errors.As(err, &serviceErr)
@@ -58,7 +58,7 @@ func (s *Server) handleShorten(ctx echo.Context) error {
 
 func (s *Server) handleReverse(ctx echo.Context) error {
 	shortLink := ctx.Param("short")
-	res, err := s.shortUrlService.Reverse(shortLink)
+	res, err := s.shortUrlService.Reverse(ctx.Request().Context(),shortLink)
 	if err != nil {
 		var serviceErr *service.Error
 		ok := errors.As(err, &serviceErr)
@@ -85,7 +85,7 @@ func (s *Server) handleReverse(ctx echo.Context) error {
 
 func (s *Server) handleRedirect(ctx echo.Context) error {
 	shortLink := ctx.Param("short")
-	res, err := s.shortUrlService.Reverse(shortLink)
+	res, err := s.shortUrlService.Reverse(ctx.Request().Context(),shortLink)
 	if err != nil {
 		var serviceErr *service.Error
 		ok := errors.As(err, &serviceErr)

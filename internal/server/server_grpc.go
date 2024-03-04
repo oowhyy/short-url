@@ -12,7 +12,7 @@ import (
 
 func (s *Server) Shorten(ctx context.Context, req *shorturlpb.PostUrlRequest) (*shorturlpb.PostUrlResponse, error) {
 	someString := req.GetOgUrl()
-	res, err := s.shortUrlService.Shorten(someString)
+	res, err := s.shortUrlService.Shorten(ctx, someString)
 	if err != nil {
 		var serviceErr *service.Error
 		ok := errors.As(err, &serviceErr)
@@ -29,7 +29,7 @@ func (s *Server) Shorten(ctx context.Context, req *shorturlpb.PostUrlRequest) (*
 
 func (s *Server) Reverse(ctx context.Context, req *shorturlpb.GetUrlRequest) (*shorturlpb.GetUrlResponse, error) {
 	short := req.GetShortLink()
-	res, err := s.shortUrlService.Reverse(short)
+	res, err := s.shortUrlService.Reverse(ctx,short)
 	if err != nil {
 		var serviceErr *service.Error
 		ok := errors.As(err, &serviceErr)

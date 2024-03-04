@@ -1,6 +1,7 @@
 package service
 
 import (
+	"context"
 	"errors"
 	"testing"
 
@@ -36,9 +37,9 @@ func TestHasherService_Shorten(t *testing.T) {
 			someString: "https://example.com/abc?name=123#here",
 			setupMock: func(t *testing.T) *mocks.ShortUrlStorage {
 				store := mocks.NewShortUrlStorage(t)
-				store.EXPECT().FindByValue(mock.Anything).Return("", false, nil).Once() // not found
-				store.EXPECT().FindByKey(mock.Anything).Return("", false, nil).Once()   // can save
-				store.EXPECT().Save(mock.Anything, mock.Anything).Return(nil).Once()    // save
+				store.EXPECT().FindByValue(mock.Anything, mock.Anything).Return("", false, nil).Once() // not found
+				store.EXPECT().FindByKey(mock.Anything, mock.Anything).Return("", false, nil).Once()   // can save
+				store.EXPECT().Save(mock.Anything, mock.Anything, mock.Anything).Return(nil).Once()    // save
 				return store
 			},
 			want:    "nlGBTnTYkR",
@@ -49,7 +50,7 @@ func TestHasherService_Shorten(t *testing.T) {
 			someString: "ws://anyvaliduri.com:1111/abc?name=123#here",
 			setupMock: func(t *testing.T) *mocks.ShortUrlStorage {
 				store := mocks.NewShortUrlStorage(t)
-				store.EXPECT().FindByValue(mock.Anything).Return("mockoutput", true, nil).Once() // exists
+				store.EXPECT().FindByValue(mock.Anything, mock.Anything).Return("mockoutput", true, nil).Once() // exists
 				return store
 			},
 			want:    "mockoutput",
@@ -70,7 +71,7 @@ func TestHasherService_Shorten(t *testing.T) {
 			someString: "ws://anyvaliduri.com:1111/abc?name=123#here",
 			setupMock: func(t *testing.T) *mocks.ShortUrlStorage {
 				store := mocks.NewShortUrlStorage(t)
-				store.EXPECT().FindByValue(mock.Anything).Return("", false, errors.New("storage find err"))
+				store.EXPECT().FindByValue(mock.Anything, mock.Anything).Return("", false, errors.New("storage find err"))
 				return store
 			},
 			want:    "",
@@ -81,8 +82,8 @@ func TestHasherService_Shorten(t *testing.T) {
 			someString: "ws://anyvaliduri.com:1111/abc?name=123#here",
 			setupMock: func(t *testing.T) *mocks.ShortUrlStorage {
 				store := mocks.NewShortUrlStorage(t)
-				store.EXPECT().FindByValue(mock.Anything).Return("", false, nil).Once() // not found
-				store.EXPECT().FindByKey(mock.Anything).Return("", false, errors.New("storage find err"))
+				store.EXPECT().FindByValue(mock.Anything, mock.Anything).Return("", false, nil).Once() // not found
+				store.EXPECT().FindByKey(mock.Anything, mock.Anything).Return("", false, errors.New("storage find err"))
 				return store
 			},
 			want:    "",
@@ -93,9 +94,9 @@ func TestHasherService_Shorten(t *testing.T) {
 			someString: "ws://anyvaliduri.com:1111/abc?name=123#here",
 			setupMock: func(t *testing.T) *mocks.ShortUrlStorage {
 				store := mocks.NewShortUrlStorage(t)
-				store.EXPECT().FindByValue(mock.Anything).Return("", false, nil).Once()                           // not found
-				store.EXPECT().FindByKey(mock.Anything).Return("", false, nil).Once()                             // can save
-				store.EXPECT().Save(mock.Anything, mock.Anything).Return(errors.New("save storage error")).Once() // save error
+				store.EXPECT().FindByValue(mock.Anything, mock.Anything).Return("", false, nil).Once()                           // not found
+				store.EXPECT().FindByKey(mock.Anything, mock.Anything).Return("", false, nil).Once()                             // can save
+				store.EXPECT().Save(mock.Anything, mock.Anything, mock.Anything).Return(errors.New("save storage error")).Once() // save error
 				return store
 			},
 			want:    "",
@@ -106,8 +107,8 @@ func TestHasherService_Shorten(t *testing.T) {
 			someString: "ws://anyvaliduri.com:1111/abc?name=123#here",
 			setupMock: func(t *testing.T) *mocks.ShortUrlStorage {
 				store := mocks.NewShortUrlStorage(t)
-				store.EXPECT().FindByValue(mock.Anything).Return("", false, nil).Once()        // not found
-				store.EXPECT().FindByKey(mock.Anything).Return("http://exists.com", true, nil) // always collide
+				store.EXPECT().FindByValue(mock.Anything, mock.Anything).Return("", false, nil).Once()        // not found
+				store.EXPECT().FindByKey(mock.Anything, mock.Anything).Return("http://exists.com", true, nil) // always collide
 				return store
 			},
 			want:    "",
@@ -121,7 +122,7 @@ func TestHasherService_Shorten(t *testing.T) {
 			store := tt.setupMock(t)
 
 			hasher := newTestHasher(store)
-			got, err := hasher.Shorten(tt.someString)
+			got, err := hasher.Shorten(context.Background(), tt.someString)
 			require.Equal(t, tt.want, got)
 			if tt.wantErr != nil {
 				var customErr *Error
@@ -147,7 +148,7 @@ func TestHasherService_Reverse(t *testing.T) {
 			shortLink: "mockinput",
 			setupMock: func(t *testing.T) *mocks.ShortUrlStorage {
 				store := mocks.NewShortUrlStorage(t)
-				store.EXPECT().FindByKey("mockinput").Return("http://ogurl.com", true, nil).Once()
+				store.EXPECT().FindByKey(mock.Anything,"mockinput").Return("http://ogurl.com", true, nil).Once()
 				return store
 			},
 			want:    "http://ogurl.com",
@@ -158,7 +159,7 @@ func TestHasherService_Reverse(t *testing.T) {
 			shortLink: "mockinput",
 			setupMock: func(t *testing.T) *mocks.ShortUrlStorage {
 				store := mocks.NewShortUrlStorage(t)
-				store.EXPECT().FindByKey("mockinput").Return("", false, nil).Once()
+				store.EXPECT().FindByKey(mock.Anything,"mockinput").Return("", false, nil).Once()
 				return store
 			},
 			want:    "",
@@ -169,7 +170,7 @@ func TestHasherService_Reverse(t *testing.T) {
 			shortLink: "mockinput",
 			setupMock: func(t *testing.T) *mocks.ShortUrlStorage {
 				store := mocks.NewShortUrlStorage(t)
-				store.EXPECT().FindByKey("mockinput").Return("", false, errors.New("storage save error")).Once()
+				store.EXPECT().FindByKey(mock.Anything,"mockinput").Return("", false, errors.New("storage save error")).Once()
 				return store
 			},
 			want:    "",
@@ -182,7 +183,7 @@ func TestHasherService_Reverse(t *testing.T) {
 			t.Parallel()
 			store := tt.setupMock(t)
 			hasher := newTestHasher(store)
-			got, err := hasher.Reverse(tt.shortLink)
+			got, err := hasher.Reverse(context.Background(), tt.shortLink)
 			require.Equal(t, tt.want, got)
 			if tt.wantErr != nil {
 				var customErr *Error

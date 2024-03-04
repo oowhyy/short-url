@@ -1,6 +1,9 @@
 package memory
 
-import "sync"
+import (
+	"context"
+	"sync"
+)
 
 type MemoryStorage struct {
 	keyValue sync.Map
@@ -11,13 +14,13 @@ func NewMemoryStorage() *MemoryStorage {
 	return &MemoryStorage{}
 }
 
-func (ms *MemoryStorage) Save(shortKey string, longValue string) error {
+func (ms *MemoryStorage) Save(ctx context.Context, shortKey string, longValue string) error {
 	ms.keyValue.Store(shortKey, longValue)
 	ms.valueKey.Store(longValue, shortKey)
 	return nil
 }
 
-func (ms *MemoryStorage) FindByKey(shortKey string) (string, bool, error) {
+func (ms *MemoryStorage) FindByKey(ctx context.Context, shortKey string) (string, bool, error) {
 	val, ok := ms.keyValue.Load(shortKey)
 	if !ok {
 		return "", false, nil
@@ -25,7 +28,7 @@ func (ms *MemoryStorage) FindByKey(shortKey string) (string, bool, error) {
 	return val.(string), true, nil
 }
 
-func (ms *MemoryStorage) FindByValue(longVlaue string) (string, bool, error) {
+func (ms *MemoryStorage) FindByValue(ctx context.Context, longVlaue string) (string, bool, error) {
 	key, ok := ms.valueKey.Load(longVlaue)
 	if !ok {
 		return "", false, nil

@@ -43,7 +43,7 @@ func TestServer_handleShorten(t *testing.T) {
 			},
 			setupMock: func(t *testing.T) *mocks.ShortUrlService {
 				sus := mocks.NewShortUrlService(t)
-				sus.EXPECT().Shorten(mock.Anything).Return("mockoutput", nil).Once()
+				sus.EXPECT().Shorten(mock.Anything,mock.Anything).Return("mockoutput", nil).Once()
 				return sus
 			},
 			wantCode: http.StatusOK,
@@ -93,7 +93,7 @@ func TestServer_handleShorten(t *testing.T) {
 			},
 			setupMock: func(t *testing.T) *mocks.ShortUrlService {
 				sus := mocks.NewShortUrlService(t)
-				sus.EXPECT().Shorten(mock.Anything).Return("", errors.New("some untyped error")).Once()
+				sus.EXPECT().Shorten(mock.Anything,mock.Anything).Return("", errors.New("some untyped error")).Once()
 				return sus
 			},
 			wantCode: http.StatusInternalServerError,
@@ -121,7 +121,7 @@ func TestServer_handleShorten(t *testing.T) {
 			},
 			setupMock: func(t *testing.T) *mocks.ShortUrlService {
 				sus := mocks.NewShortUrlService(t)
-				sus.EXPECT().Shorten(mock.Anything).Return("", TestErrServiceInvalid).Once()
+				sus.EXPECT().Shorten(mock.Anything,mock.Anything).Return("", TestErrServiceInvalid).Once()
 				return sus
 			},
 			wantCode: http.StatusBadRequest,
@@ -149,7 +149,7 @@ func TestServer_handleShorten(t *testing.T) {
 			},
 			setupMock: func(t *testing.T) *mocks.ShortUrlService {
 				sus := mocks.NewShortUrlService(t)
-				sus.EXPECT().Shorten(mock.Anything).Return("", TestErrServiceInternal).Once()
+				sus.EXPECT().Shorten(mock.Anything,mock.Anything).Return("", TestErrServiceInternal).Once()
 				return sus
 			},
 			wantCode: http.StatusInternalServerError,
@@ -207,7 +207,7 @@ func TestServer_handleReverse(t *testing.T) {
 			},
 			setupMock: func(t *testing.T) *mocks.ShortUrlService {
 				sus := mocks.NewShortUrlService(t)
-				sus.EXPECT().Reverse("_SHORTLINK").Return("mockoutputfullurl", nil).Once()
+				sus.EXPECT().Reverse(mock.Anything,"_SHORTLINK").Return("mockoutputfullurl", nil).Once()
 				return sus
 			},
 			wantCode: http.StatusOK,
@@ -233,7 +233,7 @@ func TestServer_handleReverse(t *testing.T) {
 			},
 			setupMock: func(t *testing.T) *mocks.ShortUrlService {
 				sus := mocks.NewShortUrlService(t)
-				sus.EXPECT().Reverse("_SHORTLINK").Return("", errors.New("some error")).Once()
+				sus.EXPECT().Reverse(mock.Anything,"_SHORTLINK").Return("", errors.New("some error")).Once()
 				return sus
 			},
 			wantCode: http.StatusInternalServerError,
@@ -259,7 +259,7 @@ func TestServer_handleReverse(t *testing.T) {
 			},
 			setupMock: func(t *testing.T) *mocks.ShortUrlService {
 				sus := mocks.NewShortUrlService(t)
-				sus.EXPECT().Reverse("_SHORTLINK").Return("", TestErrNotFound).Once()
+				sus.EXPECT().Reverse(mock.Anything,"_SHORTLINK").Return("", TestErrNotFound).Once()
 				return sus
 			},
 			wantCode: http.StatusNotFound,
@@ -285,7 +285,7 @@ func TestServer_handleReverse(t *testing.T) {
 			},
 			setupMock: func(t *testing.T) *mocks.ShortUrlService {
 				sus := mocks.NewShortUrlService(t)
-				sus.EXPECT().Reverse("_SHORTLINK").Return("", TestErrServiceInternal).Once()
+				sus.EXPECT().Reverse(mock.Anything,"_SHORTLINK").Return("", TestErrServiceInternal).Once()
 				return sus
 			},
 			wantCode: http.StatusInternalServerError,
@@ -336,7 +336,7 @@ func TestServer_handleRedirect(t *testing.T) {
 			},
 			setupMock: func(t *testing.T) *mocks.ShortUrlService {
 				sus := mocks.NewShortUrlService(t)
-				sus.EXPECT().Reverse("_SHORTLINK").Return("https://example.com", nil).Once()
+				sus.EXPECT().Reverse(mock.Anything,"_SHORTLINK").Return("https://example.com", nil).Once()
 				return sus
 			},
 			wantCode: http.StatusSeeOther,
@@ -354,7 +354,7 @@ func TestServer_handleRedirect(t *testing.T) {
 			},
 			setupMock: func(t *testing.T) *mocks.ShortUrlService {
 				sus := mocks.NewShortUrlService(t)
-				sus.EXPECT().Reverse("_SHORTLINK").Return("", errors.New("some error")).Once()
+				sus.EXPECT().Reverse(mock.Anything,"_SHORTLINK").Return("", errors.New("some error")).Once()
 				return sus
 			},
 			wantCode: http.StatusInternalServerError,
@@ -372,7 +372,7 @@ func TestServer_handleRedirect(t *testing.T) {
 			},
 			setupMock: func(t *testing.T) *mocks.ShortUrlService {
 				sus := mocks.NewShortUrlService(t)
-				sus.EXPECT().Reverse("_SHORTLINK").Return("", TestErrNotFound).Once()
+				sus.EXPECT().Reverse(mock.Anything,"_SHORTLINK").Return("", TestErrNotFound).Once()
 				return sus
 			},
 			wantCode: http.StatusNotFound,
@@ -390,7 +390,7 @@ func TestServer_handleRedirect(t *testing.T) {
 			},
 			setupMock: func(t *testing.T) *mocks.ShortUrlService {
 				sus := mocks.NewShortUrlService(t)
-				sus.EXPECT().Reverse("_SHORTLINK").Return("", TestErrServiceInternal).Once()
+				sus.EXPECT().Reverse(mock.Anything,"_SHORTLINK").Return("", TestErrServiceInternal).Once()
 				return sus
 			},
 			wantCode: http.StatusInternalServerError,

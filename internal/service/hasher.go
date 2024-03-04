@@ -1,6 +1,7 @@
 package service
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"hash/fnv"
@@ -31,13 +32,13 @@ func NewHasherService(config *Config, logger zerolog.Logger, shortUrlStorage sto
 	}
 }
 
-func (hs *HasherService) Shorten(someString string) (string, error) {
+func (hs *HasherService) Shorten(ctx context.Context, someString string) (string, error) {
 	parsedUrl, err := url.ParseRequestURI(someString)
 	if err != nil {
 		return "", &Error{ReasonInvalidReq, fmt.Errorf("parse url: %w", err)}
 	}
 	urlString := parsedUrl.String()
-	long, ok, err := hs.shortUrlStorage.FindByValue(urlString)
+	long, ok, err := hs.shortUrlStorage.FindByValue(ctx, urlString)
 	if err != nil {
 		return "", &Error{ReasonStorage, fmt.Errorf("find by value: %w", err)}
 	}
@@ -47,7 +48,7 @@ func (hs *HasherService) Shorten(someString string) (string, error) {
 	for try := 0; try < 100; try++ {
 		short := magicHash(hs.HashKey, urlString)
 		// check collision
-		_, ok, err := hs.shortUrlStorage.FindByKey(short)
+		_, ok, err := hs.shortUrlStorage.FindByKey(ctx, short)
 		if err != nil {
 			return "", &Error{ReasonStorage, fmt.Errorf("find by key: %w", err)}
 		}
@@ -57,7 +58,7 @@ func (hs *HasherService) Shorten(someString string) (string, error) {
 			hs.logger.Warn().Str("newKey", hs.HashKey).Msg("rare collision event - generating new key")
 			continue
 		}
-		err = hs.shortUrlStorage.Save(short, urlString)
+		err = hs.shortUrlStorage.Save(ctx, short, urlString)
 		if err != nil {
 			return "", &Error{ReasonStorage, fmt.Errorf("save: %w", err)}
 		}
@@ -66,8 +67,8 @@ func (hs *HasherService) Shorten(someString string) (string, error) {
 	return "", &Error{ReasonService, errors.New("too many collisions")}
 }
 
-func (hs *HasherService) Reverse(shortLink string) (string, error) {
-	long, ok, err := hs.shortUrlStorage.FindByKey(shortLink)
+func (hs *HasherService) Reverse(ctx context.Context, shortLink string) (string, error) {
+	long, ok, err := hs.shortUrlStorage.FindByKey(ctx, shortLink)
 	if err != nil {
 		return "", &Error{ReasonStorage, fmt.Errorf("find by key: %w", err)}
 	}

@@ -36,7 +36,7 @@ func TestServer_Shorten(t *testing.T) {
 			},
 			setupMock: func(t *testing.T) *mocks.ShortUrlService {
 				sus := mocks.NewShortUrlService(t)
-				sus.EXPECT().Shorten(mock.Anything).Return("mockoutput", nil).Once()
+				sus.EXPECT().Shorten(mock.Anything,mock.Anything).Return("mockoutput", nil).Once()
 				return sus
 			},
 			want: &shorturlpb.PostUrlResponse{
@@ -51,7 +51,7 @@ func TestServer_Shorten(t *testing.T) {
 			},
 			setupMock: func(t *testing.T) *mocks.ShortUrlService {
 				sus := mocks.NewShortUrlService(t)
-				sus.EXPECT().Shorten(mock.Anything).Return("", errors.New("some untyped error")).Once()
+				sus.EXPECT().Shorten(mock.Anything,mock.Anything).Return("", errors.New("some untyped error")).Once()
 				return sus
 			},
 			want:    &shorturlpb.PostUrlResponse{},
@@ -64,7 +64,7 @@ func TestServer_Shorten(t *testing.T) {
 			},
 			setupMock: func(t *testing.T) *mocks.ShortUrlService {
 				sus := mocks.NewShortUrlService(t)
-				sus.EXPECT().Shorten(mock.Anything).Return("", &service.Error{Reason: service.ReasonInvalidReq, Err: errors.New("some error")}).Once()
+				sus.EXPECT().Shorten(mock.Anything,mock.Anything).Return("", &service.Error{Reason: service.ReasonInvalidReq, Err: errors.New("some error")}).Once()
 				return sus
 			},
 			want:    &shorturlpb.PostUrlResponse{},
@@ -77,7 +77,7 @@ func TestServer_Shorten(t *testing.T) {
 			},
 			setupMock: func(t *testing.T) *mocks.ShortUrlService {
 				sus := mocks.NewShortUrlService(t)
-				sus.EXPECT().Shorten(mock.Anything).Return("", &service.Error{Reason: service.ReasonService, Err: errors.New("some error")}).Once()
+				sus.EXPECT().Shorten(mock.Anything,mock.Anything).Return("", &service.Error{Reason: service.ReasonService, Err: errors.New("some error")}).Once()
 				return sus
 			},
 			want:    &shorturlpb.PostUrlResponse{},
@@ -116,7 +116,7 @@ func TestServer_Reverse(t *testing.T) {
 			},
 			setupMock: func(t *testing.T) *mocks.ShortUrlService {
 				sus := mocks.NewShortUrlService(t)
-				sus.EXPECT().Reverse(mock.Anything).Return("mockoutput", nil).Once()
+				sus.EXPECT().Reverse(mock.Anything,mock.Anything).Return("mockoutput", nil).Once()
 				return sus
 			},
 			want: &shorturlpb.GetUrlResponse{
@@ -131,7 +131,7 @@ func TestServer_Reverse(t *testing.T) {
 			},
 			setupMock: func(t *testing.T) *mocks.ShortUrlService {
 				sus := mocks.NewShortUrlService(t)
-				sus.EXPECT().Reverse(mock.Anything).Return("", errors.New("untyped error")).Once()
+				sus.EXPECT().Reverse(mock.Anything,mock.Anything).Return("", errors.New("untyped error")).Once()
 				return sus
 			},
 			want: &shorturlpb.GetUrlResponse{},
@@ -144,7 +144,7 @@ func TestServer_Reverse(t *testing.T) {
 			},
 			setupMock: func(t *testing.T) *mocks.ShortUrlService {
 				sus := mocks.NewShortUrlService(t)
-				sus.EXPECT().Reverse(mock.Anything).Return("", &service.Error{Reason: service.ReasonNotFound, Err: errors.New("some err")}).Once()
+				sus.EXPECT().Reverse(mock.Anything,mock.Anything).Return("", &service.Error{Reason: service.ReasonNotFound, Err: errors.New("some err")}).Once()
 				return sus
 			},
 			want: &shorturlpb.GetUrlResponse{},
@@ -157,7 +157,7 @@ func TestServer_Reverse(t *testing.T) {
 			},
 			setupMock: func(t *testing.T) *mocks.ShortUrlService {
 				sus := mocks.NewShortUrlService(t)
-				sus.EXPECT().Reverse(mock.Anything).Return("", &service.Error{Reason: service.ReasonService, Err: errors.New("some err")}).Once()
+				sus.EXPECT().Reverse(mock.Anything,mock.Anything).Return("", &service.Error{Reason: service.ReasonService, Err: errors.New("some err")}).Once()
 				return sus
 			},
 			want: &shorturlpb.GetUrlResponse{},
