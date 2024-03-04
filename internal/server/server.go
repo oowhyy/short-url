@@ -78,6 +78,7 @@ func (s *Server) RunGrpc(ctx context.Context) error {
 
 func (s *Server) RunHttp(ctx context.Context) error {
 	e := echo.New()
+	e.HideBanner = true
 	// api
 	apiGroup := e.Group("/api/v1")
 	apiGroup.GET("/health-check", s.handleHealthCheck)
@@ -92,6 +93,7 @@ func (s *Server) RunHttp(ctx context.Context) error {
 		defer cancel()
 		e.Shutdown(ctx)
 	}()
+	s.logger.Info().Str("listenAddr", s.config.ListenAddrHttp).Msg("running http server")
 	err := e.Start(s.config.ListenAddrHttp)
 	if err != nil && err != http.ErrServerClosed {
 		return err
