@@ -148,7 +148,7 @@ func TestHasherService_Reverse(t *testing.T) {
 			shortLink: "mockinput",
 			setupMock: func(t *testing.T) *mocks.ShortUrlStorage {
 				store := mocks.NewShortUrlStorage(t)
-				store.EXPECT().FindByKey(mock.Anything,"mockinput").Return("http://ogurl.com", true, nil).Once()
+				store.EXPECT().FindByKey(mock.Anything, "mockinput").Return("http://ogurl.com", true, nil).Once()
 				return store
 			},
 			want:    "http://ogurl.com",
@@ -159,7 +159,7 @@ func TestHasherService_Reverse(t *testing.T) {
 			shortLink: "mockinput",
 			setupMock: func(t *testing.T) *mocks.ShortUrlStorage {
 				store := mocks.NewShortUrlStorage(t)
-				store.EXPECT().FindByKey(mock.Anything,"mockinput").Return("", false, nil).Once()
+				store.EXPECT().FindByKey(mock.Anything, "mockinput").Return("", false, nil).Once()
 				return store
 			},
 			want:    "",
@@ -170,7 +170,7 @@ func TestHasherService_Reverse(t *testing.T) {
 			shortLink: "mockinput",
 			setupMock: func(t *testing.T) *mocks.ShortUrlStorage {
 				store := mocks.NewShortUrlStorage(t)
-				store.EXPECT().FindByKey(mock.Anything,"mockinput").Return("", false, errors.New("storage save error")).Once()
+				store.EXPECT().FindByKey(mock.Anything, "mockinput").Return("", false, errors.New("storage save error")).Once()
 				return store
 			},
 			want:    "",
@@ -193,4 +193,19 @@ func TestHasherService_Reverse(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestHasherService_Shorten_KeyChange(t *testing.T) {
+	store := mocks.NewShortUrlStorage(t)
+	store.EXPECT().FindByValue(mock.Anything, mock.Anything).Return("", false, nil).Once()    // not found
+	store.EXPECT().FindByKey(mock.Anything, mock.Anything).Return("exists", true, nil).Once() // collision
+	store.EXPECT().FindByKey(mock.Anything, mock.Anything).Return("", false, nil).Once()      // ok
+	store.EXPECT().Save(mock.Anything, mock.Anything, mock.Anything).Return(nil).Once()       // save
+	hasher := newTestHasher(store)
+	uri := "ws://anyvaliduri.com:1111/abc?name=123#here"
+	got, err := hasher.Shorten(context.Background(), uri)
+	require.NoError(t, err)
+	require.NotEqual(t, testBaseKey, hasher.HashKey) // HashKey must be different
+	expectHash := magicHash(hasher.HashKey, uri)
+	require.Equal(t, expectHash, got)
 }
