@@ -28,7 +28,7 @@ func (s *Server) handleShorten(ctx echo.Context) error {
 	if err := ctx.Bind(&reqBody); err != nil {
 		return ctx.JSON(http.StatusBadRequest, &PostResponse{
 			ShortLink: "",
-			Error:     "bad request params",
+			Error:     `invalid json body or header "Content-Type" is not set to "application/json"`,
 		})
 	}
 	res, err := s.shortUrlService.Shorten(ctx.Request().Context(),reqBody.OgUrl)

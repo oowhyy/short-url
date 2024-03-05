@@ -72,7 +72,7 @@ func TestServer_handleShorten(t *testing.T) {
 			setupWantBody: func(t *testing.T) string {
 				data, err := json.Marshal(PostResponse{
 					ShortLink: "",
-					Error:     "bad request params",
+					Error:     `invalid json body or header "Content-Type" is not set to "application/json"`,
 				})
 				if err != nil {
 					t.FailNow()
