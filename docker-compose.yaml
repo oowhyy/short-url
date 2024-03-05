@@ -35,6 +35,22 @@ services:
     restart: no
     networks:
       - shorturl-net
+  postgres-test:
+    container_name: pg-test
+    image: postgres:16.2-alpine3.18
+    environment:
+      POSTGRES_DB: postgres
+      POSTGRES_USER: postgres
+      PGUSER: postgres
+      POSTGRES_PASSWORD: testpwd
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready"]
+      interval: 10s
+      timeout: 5s
+      retries: 2
+    ports:
+      - "5436:5432"
+    restart: no
 
 volumes:
   pg-data:
