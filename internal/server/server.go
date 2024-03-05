@@ -82,8 +82,8 @@ func (s *Server) RunHttp(ctx context.Context) error {
 	// api
 	apiGroup := e.Group("/api/v1")
 	apiGroup.GET("/health-check", s.handleHealthCheck)
-	apiGroup.POST("/service", s.handleShorten)
-	apiGroup.GET("/service/:short", s.handleReverse)
+	apiGroup.POST("/shorturl", s.handleShorten)
+	apiGroup.GET("/shorturl/:short", s.handleReverse)
 	// redirect
 	e.GET("/:short", s.handleRedirect)
 

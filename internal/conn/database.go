@@ -16,7 +16,7 @@ func NewBunPostgres() (*bun.DB, error) {
 	pgDatabase := os.Getenv("POSTGRES_DB")
 	pgUser := os.Getenv("POSTGRES_USER")
 	pgPassword := os.Getenv("POSTGRES_PASSWORD")
-	pgAddr := fmt.Sprintf("%s:%s", os.Getenv("POSTGRES_HOST"), os.Getenv("POSTGRES_PORT"))
+	pgAddr := fmt.Sprintf("%s:%s", os.Getenv("POSTGRES_HOST"), os.Getenv("POSTGRES_CONTAINER_PORT"))
 	sqldb := sql.OpenDB(pgdriver.NewConnector(pgdriver.WithAddr(pgAddr),
 		pgdriver.WithUser(pgUser),
 		pgdriver.WithPassword(pgPassword),
@@ -25,7 +25,7 @@ func NewBunPostgres() (*bun.DB, error) {
 	))
 	db := bun.NewDB(sqldb, pgdialect.New())
 	if err := db.Ping(); err != nil {
-		panic(fmt.Sprintf("failed to ping database: %v", err))
+		return nil, fmt.Errorf("failed to ping database: %v", err)
 	}
 	// Run all migrations before starting the app
 	log.Info().Msg("migrating...")

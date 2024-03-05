@@ -8,7 +8,6 @@ import (
 	"os"
 	"os/signal"
 
-	"github.com/joho/godotenv"
 	"github.com/oowhyy/short-url/internal/config"
 	"github.com/oowhyy/short-url/internal/conn"
 	"github.com/oowhyy/short-url/internal/server"
@@ -20,10 +19,6 @@ import (
 )
 
 func main() {
-	err := godotenv.Load()
-	if err != nil {
-		log.Fatal("Error loading .env file")
-	}
 	cfgPath := flag.String("config", "config.yaml", "path to config")
 	flag.Parse()
 	cfg := config.MustLoadPath(*cfgPath)
@@ -52,7 +47,7 @@ func mustStorageFromType(sType string) storage.ShortUrlStorage {
 	case "postgres":
 		bunDb, err := conn.NewBunPostgres()
 		if err != nil {
-			log.Fatal(err)
+			log.Fatal(err.Error())
 		}
 		pg := postgres.NewPgStorage(bunDb)
 		return pg
