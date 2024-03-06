@@ -8,10 +8,10 @@ test-coverage:
 	@go tool cover -html=c.out
 
 test-up:
-	@docker-compose up -d postgres-test
+	@docker compose up -d postgres-test
 
 test-down:
-	@docker-compose down postgres-test
+	@docker compose down postgres-test
 
 proto:
 	@protoc  --go_out=. --go-grpc_out=. api/v1/shorturl/urls.proto
@@ -28,7 +28,7 @@ mig-down:
 	@goose -dir "$(MIGRATION_FOLDER)" postgres $(POSTGRES_SETUP) down
 
 up:
-	@docker-compose up -d shorturl postgres
+	@docker compose up -d shorturl postgres
 
 down:
-	@docker-compose down shorturl postgres
+	@docker compose down shorturl postgres
